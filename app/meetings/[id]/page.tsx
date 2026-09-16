@@ -23,4 +23,4 @@ export default async function MeetingDetailPage({
   return <MeetingDetail meeting={meeting} />;
 }
 
-// temporary update for peer review
+
