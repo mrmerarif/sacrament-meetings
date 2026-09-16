@@ -22,3 +22,5 @@ export default async function MeetingDetailPage({
   const meeting: SacramentMeeting = await res.json();
   return <MeetingDetail meeting={meeting} />;
 }
+
+// temporary update for peer review
