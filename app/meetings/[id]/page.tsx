@@ -8,7 +8,6 @@ export default async function MeetingDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  
   const { id } = await params;
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
@@ -22,5 +21,3 @@ export default async function MeetingDetailPage({
   const meeting: SacramentMeeting = await res.json();
   return <MeetingDetail meeting={meeting} />;
 }
-
-
