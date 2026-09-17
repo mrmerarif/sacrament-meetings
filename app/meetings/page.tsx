@@ -1,46 +1,42 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import MeetingCard from "@/components/MeetingCard";
 import type { SacramentMeeting } from "@/lib/types";
 
-export default function MeetingsPage() {
-  const [meetings, setMeetings] = useState<SacramentMeeting[]>([]);
-  const [error, setError] = useState<string | null>(null);
+async function getMeetings(): Promise<SacramentMeeting[]> {
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+const res = await fetch(baseUrl + "/api/meetings", {
+cache: "no-store",
+});
 
-  useEffect(() => {
-    async function loadMeetings() {
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
-        const res = await fetch(`${baseUrl}/api/meetings`);
-        if (!res.ok) {
-          setError("Failed to load meetings.");
-          return;
-        }
-        const data = await res.json();
-        setMeetings(data);
-      } catch {
-        setError("Failed to load meetings.");
-      }
-    }
-    loadMeetings();
-  }, []);
+if (!res.ok) {
+throw new Error("Failed to load meetings");
+}
 
-  if (error) return <p>{error}</p>;
+return res.json();
+}
 
-  return (
-    <section className="space-y-4">
-      <h1 className="text-2xl font-bold">All Meetings</h1>
-      {meetings.length === 0 && <p>No meetings found.</p>}
-      <ul className="space-y-2">
-        {meetings.map((meeting) => (
-          <li key={meeting.id}>
-            <Link href={`/meetings/${meeting.id}`} className="text-blue-600 underline">
-              {meeting.date} — {meeting.conducting}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
+export default async function MeetingsPage() {
+const meetings = await getMeetings();
+
+return (
+<section className="space-y-6">
+<div>
+<h1 className="text-3xl font-bold">All Meetings</h1>
+<p className="mt-2 text-gray-600">
+View and review sacrament meeting programs.
+</p>
+</div>
+
+  {meetings.length === 0 ? (
+    <p>No meetings found.</p>
+  ) : (
+    <div className="grid gap-4">
+      {meetings.map((meeting) => (
+        <MeetingCard key={meeting.id} meeting={meeting} />
+      ))}
+    </div>
+  )}
+</section>
+
+
+);
 }

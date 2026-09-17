@@ -1,14 +1,19 @@
 import { getMeetings } from "@/lib/meetings-db";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const date = new URL(request.url).searchParams.get("date");
-  const meetings = getMeetings(date);
+  try {
+    const { searchParams } = new URL(request.url);
+    const date = searchParams.get("date");
+    const meetings = getMeetings(date);
 
-  return new Response(JSON.stringify(meetings), {
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-    },
-  });
+    return NextResponse.json(meetings);
+  } catch (error) {
+    console.error("GET /api/meetings failed:", error);
+
+    return NextResponse.json(
+      { error: "Failed to load meetings" },
+      { status: 500 }
+    );
+  }
 }
