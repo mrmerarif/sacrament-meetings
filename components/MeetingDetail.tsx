@@ -1,16 +1,18 @@
 import type { SacramentMeeting } from "@/lib/types";
+import PrintButton from "@/components/PrintButton";
 
 export default function MeetingDetail({
 meeting,
 }: {
 meeting: SacramentMeeting;
 }) {
-return (
-<article className="space-y-8">
-<header className="border-b border-gray-200 pb-6">
-<h1 className="text-3xl font-bold">
-{meeting.date} — {meeting.meetingType.toUpperCase()}
-</h1>
+return ( <article className="space-y-8"> <PrintButton />
+
+
+  <header className="border-b border-gray-200 pb-6">
+    <h1 className="text-3xl font-bold">
+      {meeting.date} — {meeting.meetingType.toUpperCase()}
+    </h1>
 
     <div className="mt-3 space-y-1 text-gray-700">
       <p>
@@ -100,7 +102,9 @@ return (
         ))}
       </ul>
     ) : (
-      <p className="mt-2 text-gray-600">No speakers or musical numbers.</p>
+      <p className="mt-2 text-gray-600">
+        No speakers or musical numbers.
+      </p>
     )}
   </section>
 
