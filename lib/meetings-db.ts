@@ -1,10 +1,28 @@
-
 import { neon } from '@neondatabase/serverless';
 import type { SacramentMeeting } from './types';
 
 const sql = neon(process.env.DATABASE_URL!);
 
 const ITEMS_PER_PAGE = 5;
+
+function mapMeeting(row: Record<string, unknown>): SacramentMeeting {
+  return {
+    id: Number(row.id),
+    date: new Date(row.date as string).toISOString().split('T')[0],
+    meetingType: row.meeting_type as SacramentMeeting['meetingType'],
+    presiding: row.presiding as string,
+    conducting: row.conducting as string,
+    announcements: (row.announcements ?? []) as string[],
+    openingHymn: row.opening_hymn as SacramentMeeting['openingHymn'],
+    openingPrayer: row.opening_prayer as string,
+    wardBusiness: (row.ward_business ?? []) as SacramentMeeting['wardBusiness'],
+    stakeBusiness: Boolean(row.stake_business),
+    sacramentHymn: row.sacrament_hymn as SacramentMeeting['sacramentHymn'],
+    speakers: (row.speakers ?? []) as SacramentMeeting['speakers'],
+    closingHymn: row.closing_hymn as SacramentMeeting['closingHymn'],
+    closingPrayer: row.closing_prayer as string,
+  };
+}
 
 export async function getMeetings(
   query = '',
@@ -26,22 +44,20 @@ export async function getMeetings(
     OFFSET ${offset}
   `;
 
-  return rows.map((row) => ({
-    id: Number(row.id),
-    date: new Date(row.date).toISOString().split('T')[0],
-    meetingType: row.meeting_type as SacramentMeeting['meetingType'],
-    presiding: row.presiding as string,
-    conducting: row.conducting as string,
-    announcements: (row.announcements ?? []) as string[],
-    openingHymn: row.opening_hymn as SacramentMeeting['openingHymn'],
-    openingPrayer: row.opening_prayer as string,
-    wardBusiness: (row.ward_business ?? []) as SacramentMeeting['wardBusiness'],
-    stakeBusiness: Boolean(row.stake_business),
-    sacramentHymn: row.sacrament_hymn as SacramentMeeting['sacramentHymn'],
-    speakers: (row.speakers ?? []) as SacramentMeeting['speakers'],
-    closingHymn: row.closing_hymn as SacramentMeeting['closingHymn'],
-    closingPrayer: row.closing_prayer as string,
-  }));
+  return rows.map(mapMeeting);
+}
+
+export async function getMeetingsByDate(
+  date: string
+): Promise<SacramentMeeting[]> {
+  const rows = await sql`
+    SELECT *
+    FROM meetings
+    WHERE date = ${date}
+    ORDER BY date DESC
+  `;
+
+  return rows.map(mapMeeting);
 }
 
 export async function getMeetingsTotalPages(
@@ -78,24 +94,7 @@ export async function getMeetingById(
     return null;
   }
 
-  const row = rows[0];
-
-  return {
-    id: Number(row.id),
-    date: new Date(row.date).toISOString().split('T')[0],
-    meetingType: row.meeting_type as SacramentMeeting['meetingType'],
-    presiding: row.presiding as string,
-    conducting: row.conducting as string,
-    announcements: (row.announcements ?? []) as string[],
-    openingHymn: row.opening_hymn as SacramentMeeting['openingHymn'],
-    openingPrayer: row.opening_prayer as string,
-    wardBusiness: (row.ward_business ?? []) as SacramentMeeting['wardBusiness'],
-    stakeBusiness: Boolean(row.stake_business),
-    sacramentHymn: row.sacrament_hymn as SacramentMeeting['sacramentHymn'],
-    speakers: (row.speakers ?? []) as SacramentMeeting['speakers'],
-    closingHymn: row.closing_hymn as SacramentMeeting['closingHymn'],
-    closingPrayer: row.closing_prayer as string,
-  };
+  return mapMeeting(rows[0]);
 }
 
 // Mutation functions will be implemented in Week 04.

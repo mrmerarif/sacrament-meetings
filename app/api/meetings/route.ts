@@ -1,11 +1,17 @@
-import { getMeetings } from "@/lib/meetings-db";
+import {
+  getMeetings,
+  getMeetingsByDate,
+} from "@/lib/meetings-db";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const date = searchParams.get("date");
-    const meetings = await getMeetings(date ?? "");
+
+    const meetings = date
+      ? await getMeetingsByDate(date)
+      : await getMeetings();
 
     return NextResponse.json(meetings);
   } catch (error) {
