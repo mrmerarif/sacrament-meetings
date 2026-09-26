@@ -97,24 +97,81 @@ export async function getMeetingById(
   return mapMeeting(rows[0]);
 }
 
-// Mutation functions will be implemented in Week 04.
 export async function addMeeting(
   meeting: Omit<SacramentMeeting, 'id'>
 ): Promise<void> {
-  void meeting;
-  return;
+  await sql`
+    INSERT INTO meetings (
+      date,
+      meeting_type,
+      presiding,
+      conducting,
+      announcements,
+      opening_hymn,
+      opening_prayer,
+      ward_business,
+      stake_business,
+      sacrament_hymn,
+      speakers,
+      closing_hymn,
+      closing_prayer
+    )
+    VALUES (
+      ${meeting.date},
+      ${meeting.meetingType},
+      ${meeting.presiding},
+      ${meeting.conducting},
+      ${meeting.announcements ?? []},
+      ${JSON.stringify(meeting.openingHymn)},
+      ${meeting.openingPrayer},
+      ${JSON.stringify(meeting.wardBusiness)},
+      ${meeting.stakeBusiness},
+      ${JSON.stringify(meeting.sacramentHymn)},
+      ${JSON.stringify(meeting.speakers)},
+      ${JSON.stringify(meeting.closingHymn)},
+      ${meeting.closingPrayer}
+    )
+  `;
 }
 
 export async function updateMeeting(
   id: number,
   meeting: Partial<SacramentMeeting>
 ): Promise<void> {
-  void id;
-  void meeting;
-  return;
+  const existingMeeting = await getMeetingById(id);
+
+  if (!existingMeeting) {
+    throw new Error('Meeting not found.');
+  }
+
+  const updatedMeeting = {
+    ...existingMeeting,
+    ...meeting,
+  };
+
+  await sql`
+    UPDATE meetings
+    SET
+      date = ${updatedMeeting.date},
+      meeting_type = ${updatedMeeting.meetingType},
+      presiding = ${updatedMeeting.presiding},
+      conducting = ${updatedMeeting.conducting},
+      announcements = ${updatedMeeting.announcements ?? []},
+      opening_hymn = ${JSON.stringify(updatedMeeting.openingHymn)},
+      opening_prayer = ${updatedMeeting.openingPrayer},
+      ward_business = ${JSON.stringify(updatedMeeting.wardBusiness)},
+      stake_business = ${updatedMeeting.stakeBusiness},
+      sacrament_hymn = ${JSON.stringify(updatedMeeting.sacramentHymn)},
+      speakers = ${JSON.stringify(updatedMeeting.speakers)},
+      closing_hymn = ${JSON.stringify(updatedMeeting.closingHymn)},
+      closing_prayer = ${updatedMeeting.closingPrayer}
+    WHERE id = ${id}
+  `;
 }
 
 export async function deleteMeeting(id: number): Promise<void> {
-  void id;
-  return;
+  await sql`
+    DELETE FROM meetings
+    WHERE id = ${id}
+  `;
 }
