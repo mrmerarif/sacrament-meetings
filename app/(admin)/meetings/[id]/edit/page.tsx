@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { editMeeting } from '@/lib/actions';
 import { getMeetingById } from '@/lib/meetings-db';
 
@@ -11,13 +12,13 @@ export default async function EditMeetingPage({
   const numericId = Number(id);
 
   if (!Number.isInteger(numericId)) {
-    return <p>Invalid meeting ID.</p>;
+    notFound();
   }
 
   const meeting = await getMeetingById(numericId);
 
   if (!meeting) {
-    return <p>Meeting not found.</p>;
+    notFound();
   }
 
   const updateMeetingWithId = editMeeting.bind(null, numericId);

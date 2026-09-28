@@ -59,32 +59,40 @@ function parseMeetingForm(formData: FormData) {
 export async function createMeeting(formData: FormData) {
   const data = parseMeetingForm(formData);
 
-  await addMeeting({
-    date: data.date,
-    meetingType: data.meetingType as MeetingType,
-    presiding: data.presiding,
-    conducting: data.conducting,
-    announcements: [],
-    openingHymn: {
-      number: data.openingHymnNumber,
-      title: data.openingHymnTitle,
-    },
-    openingPrayer: data.openingPrayer,
-    wardBusiness: [],
-    stakeBusiness: false,
-    sacramentHymn: {
-      number: data.sacramentHymnNumber,
-      title: data.sacramentHymnTitle,
-    },
-    speakers: [],
-    closingHymn: {
-      number: data.closingHymnNumber,
-      title: data.closingHymnTitle,
-    },
-    closingPrayer: data.closingPrayer,
-  });
+  try {
+    await addMeeting({
+      date: data.date,
+      meetingType: data.meetingType as MeetingType,
+      presiding: data.presiding,
+      conducting: data.conducting,
+      announcements: [],
+      openingHymn: {
+        number: data.openingHymnNumber,
+        title: data.openingHymnTitle,
+      },
+      openingPrayer: data.openingPrayer,
+      wardBusiness: [],
+      stakeBusiness: false,
+      sacramentHymn: {
+        number: data.sacramentHymnNumber,
+        title: data.sacramentHymnTitle,
+      },
+      speakers: [],
+      closingHymn: {
+        number: data.closingHymnNumber,
+        title: data.closingHymnTitle,
+      },
+      closingPrayer: data.closingPrayer,
+    });
 
-  revalidatePath('/meetings');
+    revalidatePath('/meetings');
+  } catch (error) {
+    console.error('Error creating meeting:', error);
+    throw new Error(
+      'Failed to create meeting. Please try again later.'
+    );
+  }
+
   redirect('/meetings');
 }
 
@@ -94,34 +102,48 @@ export async function editMeeting(
 ) {
   const data = parseMeetingForm(formData);
 
-  await updateMeeting(id, {
-    date: data.date,
-    meetingType: data.meetingType as MeetingType,
-    presiding: data.presiding,
-    conducting: data.conducting,
-    openingHymn: {
-      number: data.openingHymnNumber,
-      title: data.openingHymnTitle,
-    },
-    openingPrayer: data.openingPrayer,
-    sacramentHymn: {
-      number: data.sacramentHymnNumber,
-      title: data.sacramentHymnTitle,
-    },
-    closingHymn: {
-      number: data.closingHymnNumber,
-      title: data.closingHymnTitle,
-    },
-    closingPrayer: data.closingPrayer,
-  });
+  try {
+    await updateMeeting(id, {
+      date: data.date,
+      meetingType: data.meetingType as MeetingType,
+      presiding: data.presiding,
+      conducting: data.conducting,
+      openingHymn: {
+        number: data.openingHymnNumber,
+        title: data.openingHymnTitle,
+      },
+      openingPrayer: data.openingPrayer,
+      sacramentHymn: {
+        number: data.sacramentHymnNumber,
+        title: data.sacramentHymnTitle,
+      },
+      closingHymn: {
+        number: data.closingHymnNumber,
+        title: data.closingHymnTitle,
+      },
+      closingPrayer: data.closingPrayer,
+    });
 
-  revalidatePath('/meetings');
-  revalidatePath(`/meetings/${id}`);
+    revalidatePath('/meetings');
+    revalidatePath(`/meetings/${id}`);
+  } catch (error) {
+    console.error('Error updating meeting:', error);
+    throw new Error(
+      'Failed to update meeting. Please try again later.'
+    );
+  }
+
   redirect('/meetings');
 }
 
 export async function removeMeeting(id: number) {
-  await deleteMeeting(id);
-
-  revalidatePath('/meetings');
+  try {
+    await deleteMeeting(id);
+    revalidatePath('/meetings');
+  } catch (error) {
+    console.error('Error deleting meeting:', error);
+    throw new Error(
+      'Failed to delete meeting. Please try again later.'
+    );
+  }
 }
