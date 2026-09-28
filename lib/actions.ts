@@ -11,7 +11,7 @@ import {
 import type { MeetingType } from './types';
 
 const MeetingFormSchema = z.object({
-  date: z.string().min(1),
+  date: z.string().min(1, 'Meeting date is required.'),
   meetingType: z.enum([
     'testimony',
     'regular',
@@ -19,20 +19,61 @@ const MeetingFormSchema = z.object({
     'general',
     'special',
   ]),
-  presiding: z.string().min(2),
-  conducting: z.string().min(2),
-  openingHymnNumber: z.coerce.number().int().positive(),
-  openingHymnTitle: z.string().min(2),
-  openingPrayer: z.string().min(2),
-  sacramentHymnNumber: z.coerce.number().int().positive(),
-  sacramentHymnTitle: z.string().min(2),
-  closingHymnNumber: z.coerce.number().int().positive(),
-  closingHymnTitle: z.string().min(2),
-  closingPrayer: z.string().min(2),
+  presiding: z
+    .string()
+    .min(2, 'Presiding name must be at least 2 characters.'),
+  conducting: z
+    .string()
+    .min(2, 'Conducting name must be at least 2 characters.'),
+  openingHymnNumber: z.coerce
+    .number()
+    .int('Opening hymn number must be a whole number.')
+    .positive('Opening hymn number must be greater than 0.'),
+  openingHymnTitle: z
+    .string()
+    .min(2, 'Opening hymn title must be at least 2 characters.'),
+  openingPrayer: z
+    .string()
+    .min(2, 'Opening prayer name must be at least 2 characters.'),
+  sacramentHymnNumber: z.coerce
+    .number()
+    .int('Sacrament hymn number must be a whole number.')
+    .positive('Sacrament hymn number must be greater than 0.'),
+  sacramentHymnTitle: z
+    .string()
+    .min(2, 'Sacrament hymn title must be at least 2 characters.'),
+  closingHymnNumber: z.coerce
+    .number()
+    .int('Closing hymn number must be a whole number.')
+    .positive('Closing hymn number must be greater than 0.'),
+  closingHymnTitle: z
+    .string()
+    .min(2, 'Closing hymn title must be at least 2 characters.'),
+  closingPrayer: z
+    .string()
+    .min(2, 'Closing prayer name must be at least 2 characters.'),
 });
 
-function parseMeetingForm(formData: FormData) {
-  const raw = {
+export type State = {
+  errors?: {
+    date?: string[];
+    meetingType?: string[];
+    presiding?: string[];
+    conducting?: string[];
+    openingHymnNumber?: string[];
+    openingHymnTitle?: string[];
+    openingPrayer?: string[];
+    sacramentHymnNumber?: string[];
+    sacramentHymnTitle?: string[];
+    closingHymnNumber?: string[];
+    closingHymnTitle?: string[];
+    closingPrayer?: string[];
+  };
+  message?: string | null;
+};
+
+function getMeetingFormData(formData: FormData) {
+  return {
     date: formData.get('date'),
     meetingType: formData.get('meetingType'),
     presiding: formData.get('presiding'),
@@ -46,8 +87,12 @@ function parseMeetingForm(formData: FormData) {
     closingHymnTitle: formData.get('closingHymnTitle'),
     closingPrayer: formData.get('closingPrayer'),
   };
+}
 
-  const parsed = MeetingFormSchema.safeParse(raw);
+function parseMeetingForm(formData: FormData) {
+  const parsed = MeetingFormSchema.safeParse(
+    getMeetingFormData(formData)
+  );
 
   if (!parsed.success) {
     throw new Error('Invalid meeting input.');
@@ -56,8 +101,23 @@ function parseMeetingForm(formData: FormData) {
   return parsed.data;
 }
 
-export async function createMeeting(formData: FormData) {
-  const data = parseMeetingForm(formData);
+export async function createMeeting(
+  prevState: State,
+  formData: FormData
+): Promise<State> {
+  const validatedFields = MeetingFormSchema.safeParse(
+    getMeetingFormData(formData)
+  );
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message:
+        'Missing or invalid fields. Failed to create meeting.',
+    };
+  }
+
+  const data = validatedFields.data;
 
   try {
     await addMeeting({
@@ -88,9 +148,11 @@ export async function createMeeting(formData: FormData) {
     revalidatePath('/meetings');
   } catch (error) {
     console.error('Error creating meeting:', error);
-    throw new Error(
-      'Failed to create meeting. Please try again later.'
-    );
+
+    return {
+      message:
+        'Database Error: Failed to create meeting. Please try again later.',
+    };
   }
 
   redirect('/meetings');
