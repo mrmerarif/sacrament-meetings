@@ -89,18 +89,6 @@ function getMeetingFormData(formData: FormData) {
   };
 }
 
-function parseMeetingForm(formData: FormData) {
-  const parsed = MeetingFormSchema.safeParse(
-    getMeetingFormData(formData)
-  );
-
-  if (!parsed.success) {
-    throw new Error('Invalid meeting input.');
-  }
-
-  return parsed.data;
-}
-
 export async function createMeeting(
   prevState: State,
   formData: FormData
@@ -160,9 +148,22 @@ export async function createMeeting(
 
 export async function editMeeting(
   id: number,
+  prevState: State,
   formData: FormData
-) {
-  const data = parseMeetingForm(formData);
+): Promise<State> {
+  const validatedFields = MeetingFormSchema.safeParse(
+    getMeetingFormData(formData)
+  );
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message:
+        'Missing or invalid fields. Failed to update meeting.',
+    };
+  }
+
+  const data = validatedFields.data;
 
   try {
     await updateMeeting(id, {
@@ -190,9 +191,11 @@ export async function editMeeting(
     revalidatePath(`/meetings/${id}`);
   } catch (error) {
     console.error('Error updating meeting:', error);
-    throw new Error(
-      'Failed to update meeting. Please try again later.'
-    );
+
+    return {
+      message:
+        'Database Error: Failed to update meeting. Please try again later.',
+    };
   }
 
   redirect('/meetings');
