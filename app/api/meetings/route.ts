@@ -1,5 +1,5 @@
 import {
-  getMeetings,
+  getAllMeetings,
   getMeetingsByDate,
 } from "@/lib/meetings-db";
 import { NextResponse } from "next/server";
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 
     const meetings = date
       ? await getMeetingsByDate(date)
-      : await getMeetings();
+      : await getAllMeetings();
 
     return NextResponse.json(meetings);
   } catch (error) {

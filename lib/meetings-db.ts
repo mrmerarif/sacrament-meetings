@@ -47,6 +47,16 @@ export async function getMeetings(
   return rows.map(mapMeeting);
 }
 
+export async function getAllMeetings(): Promise<SacramentMeeting[]> {
+  const rows = await sql`
+    SELECT *
+    FROM meetings
+    ORDER BY date DESC
+  `;
+
+  return rows.map(mapMeeting);
+}
+
 export async function getMeetingsByDate(
   date: string
 ): Promise<SacramentMeeting[]> {
